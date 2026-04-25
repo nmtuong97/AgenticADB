@@ -2,8 +2,19 @@ import json
 from typing import List, Dict, Any
 from agentic_adb.models import UIElement
 
+
 def parse_idb_json(json_content: str) -> List[UIElement]:
-    """Parses iOS IDB UI JSON string and returns a filtered list of UI Elements."""
+    """Parses an iOS IDB UI JSON string and returns a filtered list of UI elements.
+
+    It strips out non-interactable noise and computes integer center coordinates
+    for bounds to optimize token usage.
+
+    Args:
+        json_content: The raw JSON string extracted via idb.
+
+    Returns:
+        A list of parsed, filtered `UIElement` instances.
+    """
     try:
         root_node = json.loads(json_content)
     except json.JSONDecodeError:
@@ -17,7 +28,7 @@ def parse_idb_json(json_content: str) -> List[UIElement]:
         node_type = node.get("type", "")
         # Strip prefix
         if node_type.startswith("XCUIElementType"):
-            class_name = node_type[len("XCUIElementType"):]
+            class_name = node_type[len("XCUIElementType") :]
         else:
             class_name = node_type
 
@@ -30,11 +41,16 @@ def parse_idb_json(json_content: str) -> List[UIElement]:
             text = node.get("title", "")
 
         traits = node.get("traits", [])
-        clickable = "button" in traits or "link" in traits or "plays_sound" in traits or "keyboard_key" in traits
+        clickable = (
+            "button" in traits
+            or "link" in traits
+            or "plays_sound" in traits
+            or "keyboard_key" in traits
+        )
 
         # Filter logic: if empty text, empty desc, empty id, AND not clickable -> skip
         if not text and not desc and not identifier and not clickable:
-            pass # skip creating an element
+            pass  # skip creating an element
         else:
             frame = node.get("frame", {})
             center_x, center_y = 0, 0
@@ -54,7 +70,7 @@ def parse_idb_json(json_content: str) -> List[UIElement]:
                 desc=desc,
                 clickable=clickable,
                 center_x=center_x,
-                center_y=center_y
+                center_y=center_y,
             )
             elements.append(element)
             filtered_index[0] += 1
