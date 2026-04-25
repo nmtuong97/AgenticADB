@@ -3,8 +3,19 @@ import re
 from typing import List
 from agentic_adb.models import UIElement
 
+
 def parse_xml(xml_content: str) -> List[UIElement]:
-    """Parses Android UI XML string and returns a filtered list of UI Elements."""
+    """Parses an Android UI XML string and returns a filtered list of UI elements.
+
+    It strips out non-interactable noise and computes integer center coordinates
+    for bounds to optimize token usage.
+
+    Args:
+        xml_content: The raw XML string extracted via uiautomator.
+
+    Returns:
+        A list of parsed, filtered `UIElement` instances.
+    """
     root = ET.fromstring(xml_content)
     elements = []
 
@@ -13,12 +24,12 @@ def parse_xml(xml_content: str) -> List[UIElement]:
     filtered_index = 1
 
     # Extract all node elements
-    for node in root.iter('node'):
-        text = node.attrib.get('text', '')
-        desc = node.attrib.get('content-desc', '')
-        resource_id = node.attrib.get('resource-id', '')
-        clickable_str = node.attrib.get('clickable', 'false')
-        clickable = clickable_str.lower() == 'true'
+    for node in root.iter("node"):
+        text = node.attrib.get("text", "")
+        desc = node.attrib.get("content-desc", "")
+        resource_id = node.attrib.get("resource-id", "")
+        clickable_str = node.attrib.get("clickable", "false")
+        clickable = clickable_str.lower() == "true"
 
         # Filter out "useless noise"
         # Discard the node entirely if ALL of the following are true:
@@ -27,21 +38,21 @@ def parse_xml(xml_content: str) -> List[UIElement]:
             continue
 
         # Process class name: extract short class name
-        class_name_full = node.attrib.get('class', '')
-        class_name = class_name_full.split('.')[-1] if class_name_full else ''
+        class_name_full = node.attrib.get("class", "")
+        class_name = class_name_full.split(".")[-1] if class_name_full else ""
 
         # Strip package prefix from resource-id
         # e.g. "com.example:id/login_btn" -> "login_btn"
         id_str = resource_id
-        if '/' in id_str:
-            id_str = id_str.split('/', 1)[-1]
+        if "/" in id_str:
+            id_str = id_str.split("/", 1)[-1]
 
         # Calculate center coordinates from bounds "[x1,y1][x2,y2]"
-        bounds_str = node.attrib.get('bounds', '')
+        bounds_str = node.attrib.get("bounds", "")
         center_x, center_y = 0, 0
         if bounds_str:
             # Parse [x1,y1][x2,y2]
-            match = re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', bounds_str)
+            match = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds_str)
             if match:
                 x1, y1, x2, y2 = map(int, match.groups())
                 center_x = (x1 + x2) // 2
@@ -55,7 +66,7 @@ def parse_xml(xml_content: str) -> List[UIElement]:
             desc=desc,
             clickable=clickable,
             center_x=center_x,
-            center_y=center_y
+            center_y=center_y,
         )
         elements.append(element)
         filtered_index += 1

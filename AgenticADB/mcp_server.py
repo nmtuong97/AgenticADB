@@ -8,25 +8,31 @@ from mcp.server.fastmcp import FastMCP
 logging.basicConfig(
     stream=sys.stderr,
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("agentic_adb_mcp")
 
 # Initialize MCP Server
 mcp = FastMCP("AgenticADB", dependencies=["mcp>=1.0.0"])
 
+
 def get_client(os_type: str, device_id: Optional[str] = None):
     if os_type == "android":
         from agentic_adb.adb_client import ADBClient
+
         return ADBClient(device_id=device_id)
     elif os_type == "ios":
         from agentic_adb.idb_client import IDBClient
+
         return IDBClient(device_id=device_id)
     else:
         raise ValueError(f"Unsupported OS type: {os_type}")
 
+
 @mcp.tool()
-def get_current_ui(os_type: Literal["android", "ios"], device_id: Optional[str] = None) -> str:
+def get_current_ui(
+    os_type: Literal["android", "ios"], device_id: Optional[str] = None
+) -> str:
     """
     Retrieves the token-optimized, minified JSON representation of the current mobile screen.
     Call this first to understand the UI state.
@@ -42,9 +48,11 @@ def get_current_ui(os_type: Literal["android", "ios"], device_id: Optional[str] 
 
         if os_type == "android":
             from agentic_adb.parser import parse_xml
+
             ui_elements = parse_xml(raw_content)
         else:
             from agentic_adb.idb_parser import parse_idb_json
+
             ui_elements = parse_idb_json(raw_content)
 
         json_data = [element.to_dict() for element in ui_elements]
@@ -53,8 +61,11 @@ def get_current_ui(os_type: Literal["android", "ios"], device_id: Optional[str] 
         logger.error(f"Failed to get current UI: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def tap_coordinate(os_type: Literal["android", "ios"], x: int, y: int, device_id: Optional[str] = None) -> str:
+def tap_coordinate(
+    os_type: Literal["android", "ios"], x: int, y: int, device_id: Optional[str] = None
+) -> str:
     """
     Taps on the screen at the given (x, y) coordinates.
 
@@ -65,7 +76,9 @@ def tap_coordinate(os_type: Literal["android", "ios"], x: int, y: int, device_id
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Tapping coordinate ({x}, {y}) for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Tapping coordinate ({x}, {y}) for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         client.tap(x, y)
         return f"Successfully tapped at ({x}, {y})"
@@ -73,8 +86,17 @@ def tap_coordinate(os_type: Literal["android", "ios"], x: int, y: int, device_id
         logger.error(f"Failed to tap coordinate: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def swipe_screen(os_type: Literal["android", "ios"], x1: int, y1: int, x2: int, y2: int, duration_ms: int = 500, device_id: Optional[str] = None) -> str:
+def swipe_screen(
+    os_type: Literal["android", "ios"],
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int,
+    duration_ms: int = 500,
+    device_id: Optional[str] = None,
+) -> str:
     """
     Swipes from one coordinate to another.
 
@@ -88,7 +110,9 @@ def swipe_screen(os_type: Literal["android", "ios"], x1: int, y1: int, x2: int, 
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Swiping from ({x1}, {y1}) to ({x2}, {y2}) for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Swiping from ({x1}, {y1}) to ({x2}, {y2}) for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         if os_type == "android":
             client.swipe(x1, y1, x2, y2, duration_ms)
@@ -101,8 +125,11 @@ def swipe_screen(os_type: Literal["android", "ios"], x1: int, y1: int, x2: int, 
         logger.error(f"Failed to swipe screen: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def input_text_field(os_type: Literal["android", "ios"], text: str, device_id: Optional[str] = None) -> str:
+def input_text_field(
+    os_type: Literal["android", "ios"], text: str, device_id: Optional[str] = None
+) -> str:
     """
     Inputs text into the currently focused field.
     Note: You should tap the text field first using tap_coordinate before calling this.
@@ -121,8 +148,15 @@ def input_text_field(os_type: Literal["android", "ios"], text: str, device_id: O
         logger.error(f"Failed to input text: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def long_press_coordinate(os_type: Literal["android", "ios"], x: int, y: int, duration_ms: int = 1000, device_id: Optional[str] = None) -> str:
+def long_press_coordinate(
+    os_type: Literal["android", "ios"],
+    x: int,
+    y: int,
+    duration_ms: int = 1000,
+    device_id: Optional[str] = None,
+) -> str:
     """
     Simulates a long press (touch-and-hold) on the screen at the given (x, y) coordinates.
 
@@ -134,7 +168,9 @@ def long_press_coordinate(os_type: Literal["android", "ios"], x: int, y: int, du
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Long pressing coordinate ({x}, {y}) for {duration_ms}ms for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Long pressing coordinate ({x}, {y}) for {duration_ms}ms for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         client.long_press(x, y, duration_ms)
         return f"Successfully long pressed at ({x}, {y}) for {duration_ms}ms"
@@ -142,8 +178,11 @@ def long_press_coordinate(os_type: Literal["android", "ios"], x: int, y: int, du
         logger.error(f"Failed to long press coordinate: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def press_system_key(os_type: Literal["android", "ios"], key_name: str, device_id: Optional[str] = None) -> str:
+def press_system_key(
+    os_type: Literal["android", "ios"], key_name: str, device_id: Optional[str] = None
+) -> str:
     """
     Simulates pressing a hardware/system key (e.g., 'home', 'back', 'enter').
 
@@ -153,7 +192,9 @@ def press_system_key(os_type: Literal["android", "ios"], key_name: str, device_i
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Pressing system key '{key_name}' for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Pressing system key '{key_name}' for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         result = client.press_keycode(key_name)
         if result:  # Used for the iOS 'back' button warning
@@ -163,8 +204,11 @@ def press_system_key(os_type: Literal["android", "ios"], key_name: str, device_i
         logger.error(f"Failed to press system key: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def launch_application(os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None) -> str:
+def launch_application(
+    os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None
+) -> str:
     """
     Launches an application by its bundle identifier.
 
@@ -174,7 +218,9 @@ def launch_application(os_type: Literal["android", "ios"], bundle_id: str, devic
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Launching application '{bundle_id}' for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Launching application '{bundle_id}' for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         client.launch_app(bundle_id)
         return f"Successfully launched application: {bundle_id}"
@@ -182,8 +228,11 @@ def launch_application(os_type: Literal["android", "ios"], bundle_id: str, devic
         logger.error(f"Failed to launch application: {e}")
         return f"Action failed: {str(e)}"
 
+
 @mcp.tool()
-def kill_application(os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None) -> str:
+def kill_application(
+    os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None
+) -> str:
     """
     Force stops/terminates an application by its bundle identifier.
 
@@ -193,13 +242,16 @@ def kill_application(os_type: Literal["android", "ios"], bundle_id: str, device_
         device_id: Target device UDID/ID (optional)
     """
     try:
-        logger.info(f"Killing application '{bundle_id}' for {os_type} (device_id: {device_id})")
+        logger.info(
+            f"Killing application '{bundle_id}' for {os_type} (device_id: {device_id})"
+        )
         client = get_client(os_type, device_id)
         client.kill_app(bundle_id)
         return f"Successfully killed application: {bundle_id}"
     except Exception as e:
         logger.error(f"Failed to kill application: {e}")
         return f"Action failed: {str(e)}"
+
 
 if __name__ == "__main__":
     # The server uses stdio transport by default when run directly
