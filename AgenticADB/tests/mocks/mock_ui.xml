@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[0,0][1080,2400]">
+    <node index="0" text="" resource-id="" class="android.widget.LinearLayout" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[0,0][1080,2400]">
+      <!-- Useless nested nodes, should be filtered out -->
+      <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[0,0][1080,2400]">
+        <!-- React Native specific pattern: Deep ViewGroup with only testID (resource-id) -->
+        <node index="0" text="" resource-id="com.example.reactnativeapp:id/submit_button" class="android.view.ViewGroup" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[100,500][980,600]">
+           <node index="0" text="Submit" resource-id="" class="android.widget.TextView" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="false" enabled="true" focusable="false" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[150,520][930,580]" />
+        </node>
+
+        <!-- React Native specific pattern: Deep ViewGroup with only accessibility label (content-desc) -->
+        <node index="1" text="" resource-id="" class="android.view.ViewGroup" package="com.example.reactnativeapp" content-desc="Close Modal" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[900,100][1000,200]" />
+
+        <!-- Standard native elements -->
+        <node index="2" text="Enter Username" resource-id="com.example.reactnativeapp:id/username_input" class="android.widget.EditText" package="com.example.reactnativeapp" content-desc="" checkable="false" checked="false" clickable="true" enabled="true" focusable="true" focused="false" scrollable="false" long-clickable="false" password="false" selected="false" bounds="[100,300][980,400]" />
+      </node>
+    </node>
+  </node>
+</hierarchy>
