@@ -2,21 +2,30 @@ import subprocess
 import tempfile
 import os
 import shlex
+import time
 from typing import Optional
 
 class ADBClient:
     def __init__(self, device_id: Optional[str] = None):
         self.device_id = device_id
 
-    def _run_cmd(self, args: list[str]) -> str:
+    def _run_cmd(self, args: list[str], timeout: int = 15, retries: int = 2) -> str:
         cmd = ["adb"]
         if self.device_id:
             cmd.extend(["-s", self.device_id])
         cmd.extend(args)
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        result.check_returncode()
-        return result.stdout
+        attempt = 0
+        while attempt <= retries:
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+                result.check_returncode()
+                return result.stdout
+            except (subprocess.TimeoutExpired, subprocess.CalledProcessError) as e:
+                attempt += 1
+                if attempt > retries:
+                    raise e
+                time.sleep(1)
 
     def dump(self) -> str:
         """Dumps the UI hierarchy and returns the XML string."""
@@ -56,3 +65,25 @@ class ADBClient:
     def keyevent(self, keycode: int) -> None:
         """Sends a key event."""
         self._run_cmd(["shell", "input", "keyevent", str(keycode)])
+
+    def long_press(self, x: int, y: int, duration_ms: int = 1000) -> None:
+        """Simulates a touch-and-hold at the specified coordinates."""
+        self._run_cmd(["shell", "input", "swipe", str(x), str(y), str(x), str(y), str(duration_ms)])
+
+    def press_keycode(self, keycode: str) -> None:
+        """Simulates pressing hardware/system keys. Maps abstract strings to their respective OS-specific codes."""
+        keycode_mapping = {
+            "home": "KEYCODE_HOME",
+            "back": "KEYCODE_BACK",
+            "enter": "KEYCODE_ENTER"
+        }
+        mapped_keycode = keycode_mapping.get(keycode.lower(), keycode)
+        self._run_cmd(["shell", "input", "keyevent", mapped_keycode])
+
+    def launch_app(self, bundle_id: str) -> None:
+        """Opens the app using the bundle id."""
+        self._run_cmd(["shell", "monkey", "-p", bundle_id, "-c", "android.intent.category.LAUNCHER", "1"])
+
+    def kill_app(self, bundle_id: str) -> None:
+        """Force stops the app using the bundle id."""
+        self._run_cmd(["shell", "am", "force-stop", bundle_id])

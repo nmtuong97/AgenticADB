@@ -121,6 +121,86 @@ def input_text_field(os_type: Literal["android", "ios"], text: str, device_id: O
         logger.error(f"Failed to input text: {e}")
         return f"Action failed: {str(e)}"
 
+@mcp.tool()
+def long_press_coordinate(os_type: Literal["android", "ios"], x: int, y: int, duration_ms: int = 1000, device_id: Optional[str] = None) -> str:
+    """
+    Simulates a long press (touch-and-hold) on the screen at the given (x, y) coordinates.
+
+    Args:
+        os_type: "android" or "ios"
+        x: The center_x coordinate
+        y: The center_y coordinate
+        duration_ms: Duration of the long press in milliseconds (default: 1000)
+        device_id: Target device UDID/ID (optional)
+    """
+    try:
+        logger.info(f"Long pressing coordinate ({x}, {y}) for {duration_ms}ms for {os_type} (device_id: {device_id})")
+        client = get_client(os_type, device_id)
+        client.long_press(x, y, duration_ms)
+        return f"Successfully long pressed at ({x}, {y}) for {duration_ms}ms"
+    except Exception as e:
+        logger.error(f"Failed to long press coordinate: {e}")
+        return f"Action failed: {str(e)}"
+
+@mcp.tool()
+def press_system_key(os_type: Literal["android", "ios"], key_name: str, device_id: Optional[str] = None) -> str:
+    """
+    Simulates pressing a hardware/system key (e.g., 'home', 'back', 'enter').
+
+    Args:
+        os_type: "android" or "ios"
+        key_name: The abstract name of the key (e.g., "home", "back", "enter")
+        device_id: Target device UDID/ID (optional)
+    """
+    try:
+        logger.info(f"Pressing system key '{key_name}' for {os_type} (device_id: {device_id})")
+        client = get_client(os_type, device_id)
+        result = client.press_keycode(key_name)
+        if result:  # Used for the iOS 'back' button warning
+            return result
+        return f"Successfully pressed system key: {key_name}"
+    except Exception as e:
+        logger.error(f"Failed to press system key: {e}")
+        return f"Action failed: {str(e)}"
+
+@mcp.tool()
+def launch_application(os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None) -> str:
+    """
+    Launches an application by its bundle identifier.
+
+    Args:
+        os_type: "android" or "ios"
+        bundle_id: The application's bundle ID/package name
+        device_id: Target device UDID/ID (optional)
+    """
+    try:
+        logger.info(f"Launching application '{bundle_id}' for {os_type} (device_id: {device_id})")
+        client = get_client(os_type, device_id)
+        client.launch_app(bundle_id)
+        return f"Successfully launched application: {bundle_id}"
+    except Exception as e:
+        logger.error(f"Failed to launch application: {e}")
+        return f"Action failed: {str(e)}"
+
+@mcp.tool()
+def kill_application(os_type: Literal["android", "ios"], bundle_id: str, device_id: Optional[str] = None) -> str:
+    """
+    Force stops/terminates an application by its bundle identifier.
+
+    Args:
+        os_type: "android" or "ios"
+        bundle_id: The application's bundle ID/package name
+        device_id: Target device UDID/ID (optional)
+    """
+    try:
+        logger.info(f"Killing application '{bundle_id}' for {os_type} (device_id: {device_id})")
+        client = get_client(os_type, device_id)
+        client.kill_app(bundle_id)
+        return f"Successfully killed application: {bundle_id}"
+    except Exception as e:
+        logger.error(f"Failed to kill application: {e}")
+        return f"Action failed: {str(e)}"
+
 if __name__ == "__main__":
     # The server uses stdio transport by default when run directly
     mcp.run()
