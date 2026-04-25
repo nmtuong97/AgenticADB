@@ -7,14 +7,14 @@ from agentic_adb.parser import parse_xml
 from agentic_adb.idb_client import IDBClient
 from agentic_adb.idb_parser import parse_idb_json
 
-def main() -> None:
+def run_cli(args_list: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="AgenticADB: Token-efficient Android UI parser for LLM-driven automation.")
     parser.add_argument("--os", choices=["android", "ios"], default="android", help="Target OS (android or ios)")
     parser.add_argument("-d", "--device", help="Target device ID")
     parser.add_argument("-o", "--output", help="Path to save the JSON file (default to stdout)")
     parser.add_argument("--raw", action="store_true", help="Save the raw output alongside the JSON or to raw_dump if stdout")
 
-    args = parser.parse_args()
+    args = parser.parse_args(args_list)
 
     if args.os == "android":
         client = ADBClient(device_id=args.device)
@@ -56,6 +56,9 @@ def main() -> None:
     else:
         # Print JSON strictly to stdout
         print(json_str)
+
+def main() -> None:
+    run_cli()
 
 if __name__ == "__main__":
     main()
