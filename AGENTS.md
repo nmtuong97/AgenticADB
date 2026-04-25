@@ -29,6 +29,7 @@ As an autonomous agent operating in a Cloud VM, you must adhere to the following
 1. **NO PHYSICAL DEVICES OR EMULATORS AVAILABLE.** Do not attempt to start an emulator or connect to a physical device.
 2. **Mock Everything:** All `subprocess.run` calls executing raw `adb` or `idb` commands **MUST** be 100% mocked in tests using `unittest.mock`. This prevents the test suite from hanging in cloud environments.
 3. **Strict Output Control:** All debug logging must be routed to `stderr`. Standard output (`stdout`) must remain perfectly clean for JSON-RPC / MCP communication. Extraneous prints will break the server.
+4. **Communication Rule:** Communicate with the user in Vietnamese (Tiếng Việt), but keep all code, variable names, and technical terms in English.
 
 ---
 
