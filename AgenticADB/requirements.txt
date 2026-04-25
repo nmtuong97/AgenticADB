@@ -1,2 +1,3 @@
 # Standard libraries only, no external dependencies required for core logic.
 # Requires Python 3.10+
+mcp>=1.0.0
