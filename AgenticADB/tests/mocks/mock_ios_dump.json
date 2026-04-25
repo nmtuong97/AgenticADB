@@ -1,0 +1,46 @@
+{
+  "type": "XCUIElementTypeApplication",
+  "AXIdentifier": "com.apple.Preferences",
+  "AXLabel": "Settings",
+  "AXValue": "",
+  "traits": [],
+  "frame": {"x": 0, "y": 0, "width": 375, "height": 812},
+  "children": [
+    {
+      "type": "XCUIElementTypeButton",
+      "AXIdentifier": "login_btn",
+      "AXLabel": "Login",
+      "AXValue": "",
+      "traits": ["button"],
+      "frame": {"x": 100, "y": 200, "width": 50, "height": 50},
+      "children": []
+    },
+    {
+      "type": "XCUIElementTypeOther",
+      "AXIdentifier": "",
+      "AXLabel": "",
+      "AXValue": "",
+      "traits": [],
+      "frame": {"x": 0, "y": 0, "width": 375, "height": 812},
+      "children": []
+    },
+    {
+      "type": "XCUIElementTypeOther",
+      "AXIdentifier": "",
+      "AXLabel": "",
+      "AXValue": "",
+      "traits": ["button"],
+      "frame": {"x": 10, "y": 20, "width": 20, "height": 20},
+      "children": []
+    },
+    {
+      "type": "XCUIElementTypeStaticText",
+      "AXIdentifier": "welcome_text",
+      "AXLabel": "Welcome",
+      "AXValue": "",
+      "traits": ["static_text"],
+      "frame": {"x": 50, "y": 50, "width": 100, "height": 30},
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <!-- Valid standard node: TextView -->
+  <node index="0" text="Submit" resource-id="" class="android.widget.TextView" bounds="[100,200][150,250]" clickable="false" />
+
+  <!-- Valid React Native touchable node: Empty text but clickable=true and has resource-id -->
+  <node index="1" text="" resource-id="com.example:id/login_btn" class="android.view.ViewGroup" bounds="[10,20][30,40]" clickable="true" />
+
+  <!-- Useless noise node: Empty text, desc, id, and not clickable. Should be filtered out -->
+  <node index="2" text="" resource-id="" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]" clickable="false" />
+
+  <!-- Valid standard node: Prefix stripping, com.example:id/my_btn -> my_btn -->
+  <node index="3" text="Click me" resource-id="com.example:id/my_btn" class="android.widget.Button" bounds="[300,400][400,500]" clickable="true" />
+
+</hierarchy>
