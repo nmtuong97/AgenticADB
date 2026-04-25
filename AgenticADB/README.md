@@ -26,3 +26,33 @@ python3 main.py -d emulator-5554 -o view.json --raw
 - `agentic_adb/parser.py`: Handles XML parsing, noise reduction, and formatting.
 - `agentic_adb/adb_client.py`: Provides Python-native methods to interact with `adb`.
 - `agentic_adb/models.py`: Strongly typed representations using Dataclasses.
+
+## MCP Server Integration
+
+AgenticADB provides an official Model Context Protocol (MCP) server. This allows AI IDEs like Cursor or Windsurf, and tools like Claude Desktop, to natively discover and use mobile automation tools over `stdio`.
+
+### Setup for Claude Desktop
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "AgenticADB": {
+      "command": "python3",
+      "args": [
+        "/path/to/AgenticADB/mcp_server.py"
+      ]
+    }
+  }
+}
+```
+
+### Setup for Cursor / Windsurf
+In your MCP settings, add a new server using the command type (stdio transport):
+- **Name**: `AgenticADB`
+- **Command**: `python3 /path/to/AgenticADB/mcp_server.py`
+
+Make sure to install dependencies first:
+```bash
+pip install -r requirements.txt
+```
