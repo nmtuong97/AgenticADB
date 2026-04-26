@@ -5,7 +5,9 @@ import logging
 from typing import Optional, List
 
 from agentic_adb.exceptions import CommandError
+from agentic_adb.logging_config import setup_logging
 
+setup_logging()
 logger = logging.getLogger(__name__)
 
 class BaseClient(ABC):
@@ -19,12 +21,14 @@ class BaseClient(ABC):
         """
         self.device_id = device_id
 
-    def _run_command(self, cmd: list[str], *, retry: bool = False) -> str:
+    def _run_command(self, cmd: list[str], *, retry: bool = False, max_retries: Optional[int] = None, backoff_factor: float = 1.0) -> str:
         """Executes a shell command with timeouts and controlled retries.
 
         Args:
             cmd: The list of arguments to execute.
-            retry: Whether to retry the command on failure (hardcoded 2 retries, 15s timeout).
+            retry: Whether to retry the command on failure (backward compatibility flag).
+            max_retries: Maximum number of retries. Defaults to 2 if retry=True, 0 otherwise.
+            backoff_factor: Factor for exponential backoff sleep. Defaults to 1.0.
 
         Returns:
             The standard output string from the executed command.
@@ -33,7 +37,10 @@ class BaseClient(ABC):
             CommandError: If the command returns a non-zero exit code or times out.
         """
         timeout = 15
-        retries = 2 if retry else 0
+        if max_retries is None:
+            retries = 2 if retry else 0
+        else:
+            retries = max_retries
         attempt = 0
 
         while attempt <= retries:
@@ -54,7 +61,8 @@ class BaseClient(ABC):
                 if attempt > retries:
                     raise CommandError(f"Command failed with exit code {e.returncode}: {e.stderr or e.stdout}")
             if attempt <= retries:
-                time.sleep(1)
+                sleep_time = min(backoff_factor * (2 ** (attempt - 1)), 30.0)
+                time.sleep(sleep_time)
 
         # This fallback is practically unreachable but satisfies return types
         raise CommandError(f"Command failed unexpectedly: {cmd}")

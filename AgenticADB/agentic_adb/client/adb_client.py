@@ -19,15 +19,15 @@ class ADBClient(BaseClient):
         """Dumps the current UI hierarchy from the device."""
         # Dump the hierarchy to a file on the device
         device_path = "/sdcard/window_dump.xml"
-        # Safe/read operation, retry is allowed
-        self._run_command(self._build_cmd(["shell", "uiautomator", "dump", device_path]), retry=True)
+        # Safe/read operation, retry is allowed, using backoff
+        self._run_command(self._build_cmd(["shell", "uiautomator", "dump", device_path]), retry=True, max_retries=2, backoff_factor=1.0)
 
         # Pull the file to a temporary file locally
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             local_path = tmp_file.name
 
         try:
-            self._run_command(self._build_cmd(["pull", device_path, local_path]), retry=True)
+            self._run_command(self._build_cmd(["pull", device_path, local_path]), retry=True, max_retries=2, backoff_factor=1.0)
             with open(local_path, "r", encoding="utf-8") as f:
                 xml_content = f.read()
             return xml_content

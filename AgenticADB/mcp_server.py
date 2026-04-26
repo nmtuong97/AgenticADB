@@ -1,15 +1,14 @@
 import sys
 import json
 import logging
+import subprocess
 from typing import Optional, Literal
 from mcp.server.fastmcp import FastMCP
+from agentic_adb.exceptions import CommandError, ParseError
+from agentic_adb.logging_config import setup_logging
 
-# Setup logging to stderr
-logging.basicConfig(
-    stream=sys.stderr,
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+# Setup production-grade logging
+setup_logging()
 logger = logging.getLogger("agentic_adb_mcp")
 
 # Initialize MCP Server
@@ -56,7 +55,7 @@ def get_current_ui(
 
         json_data = [element.to_dict() for element in ui_elements]
         return json.dumps(json_data, indent=2)
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to get current UI: {e}")
         return f"Action failed: {str(e)}"
 
@@ -81,7 +80,7 @@ def tap_coordinate(
         _, action_service = get_services(os_type, device_id)
         action_service.tap(x, y)
         return f"Successfully tapped at ({x}, {y})"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to tap coordinate: {e}")
         return f"Action failed: {str(e)}"
 
@@ -115,7 +114,7 @@ def swipe_screen(
         _, action_service = get_services(os_type, device_id)
         action_service.swipe(x1, y1, x2, y2, duration_ms)
         return f"Successfully swiped from ({x1}, {y1}) to ({x2}, {y2})"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to swipe screen: {e}")
         return f"Action failed: {str(e)}"
 
@@ -138,7 +137,7 @@ def input_text_field(
         _, action_service = get_services(os_type, device_id)
         action_service.input_text(text)
         return f"Successfully input text: {text}"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to input text: {e}")
         return f"Action failed: {str(e)}"
 
@@ -168,7 +167,7 @@ def long_press_coordinate(
         _, action_service = get_services(os_type, device_id)
         action_service.long_press(x, y, duration_ms)
         return f"Successfully long pressed at ({x}, {y}) for {duration_ms}ms"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to long press coordinate: {e}")
         return f"Action failed: {str(e)}"
 
@@ -192,7 +191,7 @@ def press_system_key(
         _, action_service = get_services(os_type, device_id)
         action_service.press_keycode(key_name)
         return f"Successfully pressed system key: {key_name}"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to press system key: {e}")
         return f"Action failed: {str(e)}"
 
@@ -216,7 +215,7 @@ def launch_application(
         _, action_service = get_services(os_type, device_id)
         action_service.launch_app(bundle_id)
         return f"Successfully launched application: {bundle_id}"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to launch application: {e}")
         return f"Action failed: {str(e)}"
 
@@ -240,9 +239,58 @@ def kill_application(
         _, action_service = get_services(os_type, device_id)
         action_service.kill_app(bundle_id)
         return f"Successfully killed application: {bundle_id}"
-    except Exception as e:
+    except (CommandError, ParseError, subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError) as e:
         logger.error(f"Failed to kill application: {e}")
         return f"Action failed: {str(e)}"
+
+
+@mcp.tool()
+def health_check(
+    os_type: Literal["android", "ios"], device_id: Optional[str] = None
+) -> str:
+    """
+    Checks the connectivity of the target device.
+
+    Args:
+        os_type: "android" or "ios"
+        device_id: Target device UDID/ID (optional)
+    """
+    try:
+        logger.info(f"Running health check for {os_type} (device_id: {device_id})")
+        if os_type == "android":
+            cmd = ["adb"]
+            if device_id:
+                cmd.extend(["-s", device_id])
+            cmd.append("devices")
+        elif os_type == "ios":
+            cmd = ["idb", "list"]
+        else:
+            raise ValueError(f"Unsupported OS type: {os_type}")
+
+        # Execute with a short timeout and no retry
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+
+        # Simple heuristic to determine if successful
+        connected = result.returncode == 0
+        details = "Success" if connected else (result.stderr or result.stdout).strip()
+
+        response = {
+            "connected": connected,
+            "device_id": device_id,
+            "platform": os_type,
+            "details": details
+        }
+        return json.dumps(response, indent=2)
+
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, Exception) as e:
+        logger.error(f"Health check failed: {e}")
+        response = {
+            "connected": False,
+            "device_id": device_id,
+            "platform": os_type,
+            "details": str(e)
+        }
+        return json.dumps(response, indent=2)
 
 
 if __name__ == "__main__":

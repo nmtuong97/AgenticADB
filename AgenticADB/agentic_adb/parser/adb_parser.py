@@ -34,13 +34,18 @@ class ADBParser(BaseParser[UIElement]):
                 id_str = id_str.split("/", 1)[-1]
 
             bounds_str = node.attrib.get("bounds", "")
-            center_x, center_y = 0, 0
+            center_x = None
+            center_y = None
             if bounds_str:
                 match = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds_str)
                 if match:
                     x1, y1, x2, y2 = map(int, match.groups())
-                    center_x = (x1 + x2) // 2
-                    center_y = (y1 + y2) // 2
+                    cx = (x1 + x2) // 2
+                    cy = (y1 + y2) // 2
+                    # Basic validation for out-of-bounds or zero-size coordinates
+                    if cx > 0 and cy > 0 and cx < 10000 and cy < 10000:
+                        center_x = cx
+                        center_y = cy
 
             element = UIElement(
                 index=filtered_index,

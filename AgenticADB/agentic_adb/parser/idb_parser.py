@@ -45,14 +45,19 @@ class IDBParser(BaseParser[UIElement]):
                 pass
             else:
                 frame = node.get("frame", {})
-                center_x, center_y = 0, 0
+                center_x = None
+                center_y = None
                 if frame:
                     x = frame.get("x", 0.0)
                     y = frame.get("y", 0.0)
                     width = frame.get("width", 0.0)
                     height = frame.get("height", 0.0)
-                    center_x = int(x + (width / 2))
-                    center_y = int(y + (height / 2))
+                    cx = int(x + (width / 2))
+                    cy = int(y + (height / 2))
+                    # Basic validation for out-of-bounds or zero-size coordinates
+                    if cx > 0 and cy > 0 and cx < 10000 and cy < 10000:
+                        center_x = cx
+                        center_y = cy
 
                 element = UIElement(
                     index=filtered_index[0],

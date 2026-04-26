@@ -1,4 +1,6 @@
+from typing import Optional
 from agentic_adb.client.base_client import BaseClient
+from agentic_adb.exceptions import CommandError
 
 class UIActionService:
     """Service for handling write/interactive UI actions.
@@ -14,20 +16,26 @@ class UIActionService:
         """
         self._client = client
 
-    def tap(self, x: int, y: int) -> None:
+    def tap(self, x: Optional[int], y: Optional[int]) -> None:
         """Taps at the specified physical screen coordinates."""
+        if x is None or y is None:
+            raise CommandError("Element has no valid coordinates, cannot tap")
         self._client.tap(x, y)
 
-    def swipe(self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 500) -> None:
+    def swipe(self, x1: Optional[int], y1: Optional[int], x2: Optional[int], y2: Optional[int], duration_ms: int = 500) -> None:
         """Swipes from a starting coordinate to an ending coordinate."""
+        if x1 is None or y1 is None or x2 is None or y2 is None:
+            raise CommandError("Element has no valid coordinates, cannot swipe")
         self._client.swipe(x1, y1, x2, y2, duration_ms)
 
     def input_text(self, text: str) -> None:
         """Inputs text into the currently focused UI element."""
         self._client.input_text(text)
 
-    def long_press(self, x: int, y: int, duration_ms: int = 1000) -> None:
+    def long_press(self, x: Optional[int], y: Optional[int], duration_ms: int = 1000) -> None:
         """Simulates a touch-and-hold interaction at the specified coordinates."""
+        if x is None or y is None:
+            raise CommandError("Element has no valid coordinates, cannot long press")
         self._client.long_press(x, y, duration_ms)
 
     def press_keycode(self, keycode: str) -> None:

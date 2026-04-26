@@ -15,8 +15,8 @@ class IDBClient(BaseClient):
 
     def dump_ui(self) -> str:
         """Dumps the current UI hierarchy from the iOS device."""
-        # Safe/read operation, allow retries
-        return self._run_command(self._build_cmd(["ui", "describe-all"]), retry=True)
+        # Safe/read operation, allow retries, using backoff
+        return self._run_command(self._build_cmd(["ui", "describe-all"]), retry=True, max_retries=2, backoff_factor=1.0)
 
     def tap(self, x: int, y: int) -> None:
         """Taps at the specified physical screen coordinates."""

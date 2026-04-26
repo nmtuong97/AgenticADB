@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 @dataclass(frozen=True)
@@ -23,11 +23,13 @@ class UIElement:
     id: str
     desc: str
     clickable: bool
-    center_x: int
-    center_y: int
+    center_x: Optional[int]
+    center_y: Optional[int]
 
     def __post_init__(self):
-        if self.center_x < 0 or self.center_y < 0:
+        if self.center_x is not None and self.center_x < 0:
+            raise ValueError("Coordinates must be non-negative")
+        if self.center_y is not None and self.center_y < 0:
             raise ValueError("Coordinates must be non-negative")
 
     def to_dict(self) -> Dict[str, Any]:
