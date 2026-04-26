@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 
-@dataclass
+@dataclass(frozen=True)
 class UIElement:
     """Represents a unified, abstract mobile UI element parsed from an XML or JSON hierarchy.
 

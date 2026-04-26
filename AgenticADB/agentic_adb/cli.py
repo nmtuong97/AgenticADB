@@ -2,10 +2,9 @@ import argparse
 import sys
 import json
 import os
-from agentic_adb.adb_client import ADBClient
-from agentic_adb.parser import parse_xml
-from agentic_adb.idb_client import IDBClient
-from agentic_adb.idb_parser import parse_idb_json
+from agentic_adb.client import ADBClient, IDBClient
+from agentic_adb.parser import ADBParser, IDBParser
+from agentic_adb.service import UIQueryService
 
 def run_cli(args_list: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="AgenticADB: Token-efficient Android UI parser for LLM-driven automation.")
@@ -18,11 +17,15 @@ def run_cli(args_list: list[str] | None = None) -> None:
 
     if args.os == "android":
         client = ADBClient(device_id=args.device)
+        ui_parser = ADBParser()
     else:
         client = IDBClient(device_id=args.device)
+        ui_parser = IDBParser()
+
+    query_service = UIQueryService(client=client, parser=ui_parser)
 
     try:
-        raw_content = client.dump()
+        raw_content = query_service.get_raw_ui()
     except Exception as e:
         sys.stderr.write(f"Error communicating with device: {e}\n")
         sys.exit(1)
@@ -41,11 +44,12 @@ def run_cli(args_list: list[str] | None = None) -> None:
             f.write(raw_content)
         # Avoid printing to stdout to keep it clean for JSON
 
-    # Parse and minify the output to JSON
-    if args.os == "android":
-        ui_elements = parse_xml(raw_content)
-    else:
-        ui_elements = parse_idb_json(raw_content)
+    # Parse and minify the output to JSON using the query service
+    try:
+        ui_elements = query_service.parse_raw(raw_content)
+    except Exception as e:
+        sys.stderr.write(f"Error parsing UI elements: {e}\n")
+        sys.exit(1)
 
     json_data = [element.to_dict() for element in ui_elements]
     json_str = json.dumps(json_data, indent=2)
