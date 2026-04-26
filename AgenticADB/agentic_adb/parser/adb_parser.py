@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 import re
-from typing import List
 from agentic_adb.models import UIElement
 from agentic_adb.exceptions import ParseError
 from .base_parser import BaseParser
@@ -8,7 +7,7 @@ from .base_parser import BaseParser
 class ADBParser(BaseParser[UIElement]):
     """Parses an Android UI XML string and returns a filtered list of UI elements."""
 
-    def parse(self, raw: str) -> List[UIElement]:
+    def parse(self, raw: str) -> list[UIElement]:
         try:
             root = ET.fromstring(raw)
         except ET.ParseError as e:

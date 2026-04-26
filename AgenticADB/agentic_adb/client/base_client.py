@@ -19,13 +19,12 @@ class BaseClient(ABC):
         """
         self.device_id = device_id
 
-    def _run_command(self, cmd: List[str], timeout: int = 15, retries: int = 0) -> str:
+    def _run_command(self, cmd: list[str], *, retry: bool = False) -> str:
         """Executes a shell command with timeouts and controlled retries.
 
         Args:
             cmd: The list of arguments to execute.
-            timeout: Maximum execution time in seconds.
-            retries: Number of retry attempts. Should be >0 only for safe/read operations.
+            retry: Whether to retry the command on failure (hardcoded 2 retries, 15s timeout).
 
         Returns:
             The standard output string from the executed command.
@@ -33,7 +32,10 @@ class BaseClient(ABC):
         Raises:
             CommandError: If the command returns a non-zero exit code or times out.
         """
+        timeout = 15
+        retries = 2 if retry else 0
         attempt = 0
+
         while attempt <= retries:
             try:
                 result = subprocess.run(
@@ -110,14 +112,11 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def press_keycode(self, keycode: str) -> str:
+    def press_keycode(self, keycode: str) -> None:
         """Simulates pressing hardware or system keys.
 
         Args:
             keycode: The abstract name of the system key.
-
-        Returns:
-            An empty string on success, or a warning message string if unsupported.
         """
         pass
 

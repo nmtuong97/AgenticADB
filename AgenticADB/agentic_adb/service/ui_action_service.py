@@ -30,9 +30,9 @@ class UIActionService:
         """Simulates a touch-and-hold interaction at the specified coordinates."""
         self._client.long_press(x, y, duration_ms)
 
-    def press_keycode(self, keycode: str) -> str:
+    def press_keycode(self, keycode: str) -> None:
         """Simulates pressing hardware or system keys."""
-        return self._client.press_keycode(keycode)
+        self._client.press_keycode(keycode)
 
     def launch_app(self, bundle_id: str) -> None:
         """Launches an application by its bundle identifier."""

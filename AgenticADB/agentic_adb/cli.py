@@ -24,11 +24,14 @@ def run_cli(args_list: list[str] | None = None) -> None:
 
     query_service = UIQueryService(client=client, parser=ui_parser)
 
+    from agentic_adb.exceptions import CommandError, ParseError
+
     try:
         raw_content = query_service.get_raw_ui()
-    except Exception as e:
+    except CommandError as e:
         sys.stderr.write(f"Error communicating with device: {e}\n")
         sys.exit(1)
+        return
 
     if args.raw:
         ext = "xml" if args.os == "android" else "json"
@@ -47,9 +50,10 @@ def run_cli(args_list: list[str] | None = None) -> None:
     # Parse and minify the output to JSON using the query service
     try:
         ui_elements = query_service.parse_raw(raw_content)
-    except Exception as e:
+    except ParseError as e:
         sys.stderr.write(f"Error parsing UI elements: {e}\n")
         sys.exit(1)
+        return
 
     json_data = [element.to_dict() for element in ui_elements]
     json_str = json.dumps(json_data, indent=2)

@@ -28,6 +28,21 @@ class TestServices(unittest.TestCase):
         self.assertEqual(len(parsed), 1)
         mock_parser.parse.assert_called_with("custom raw")
 
+    def test_ui_query_service_empty(self):
+        mock_client = MagicMock()
+        mock_client.dump_ui.return_value = ""
+
+        mock_parser = MagicMock()
+        service = UIQueryService(mock_client, mock_parser)
+
+        elements = service.get_ui_elements()
+        self.assertEqual(len(elements), 0)
+        mock_parser.parse.assert_not_called()
+
+        parsed = service.parse_raw("")
+        self.assertEqual(len(parsed), 0)
+        mock_parser.parse.assert_not_called()
+
     def test_ui_action_service(self):
         mock_client = MagicMock()
         service = UIActionService(mock_client)
