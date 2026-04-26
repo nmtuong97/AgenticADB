@@ -16,15 +16,23 @@ logger = logging.getLogger("agentic_adb_mcp")
 mcp = FastMCP("AgenticADB", dependencies=["mcp>=1.0.0"])
 
 
-def get_client(os_type: str, device_id: Optional[str] = None):
+def get_services(os_type: str, device_id: Optional[str] = None):
     if os_type == "android":
-        from agentic_adb.adb_client import ADBClient
+        from agentic_adb.client import ADBClient
+        from agentic_adb.parser import ADBParser
+        from agentic_adb.service import UIQueryService, UIActionService
 
-        return ADBClient(device_id=device_id)
+        client = ADBClient(device_id=device_id)
+        parser = ADBParser()
+        return UIQueryService(client, parser), UIActionService(client)
     elif os_type == "ios":
-        from agentic_adb.idb_client import IDBClient
+        from agentic_adb.client import IDBClient
+        from agentic_adb.parser import IDBParser
+        from agentic_adb.service import UIQueryService, UIActionService
 
-        return IDBClient(device_id=device_id)
+        client = IDBClient(device_id=device_id)
+        parser = IDBParser()
+        return UIQueryService(client, parser), UIActionService(client)
     else:
         raise ValueError(f"Unsupported OS type: {os_type}")
 
@@ -43,17 +51,8 @@ def get_current_ui(
     """
     try:
         logger.info(f"Getting current UI for {os_type} (device_id: {device_id})")
-        client = get_client(os_type, device_id)
-        raw_content = client.dump()
-
-        if os_type == "android":
-            from agentic_adb.parser import parse_xml
-
-            ui_elements = parse_xml(raw_content)
-        else:
-            from agentic_adb.idb_parser import parse_idb_json
-
-            ui_elements = parse_idb_json(raw_content)
+        query_service, _ = get_services(os_type, device_id)
+        ui_elements = query_service.get_ui_elements()
 
         json_data = [element.to_dict() for element in ui_elements]
         return json.dumps(json_data, indent=2)
@@ -79,8 +78,8 @@ def tap_coordinate(
         logger.info(
             f"Tapping coordinate ({x}, {y}) for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        client.tap(x, y)
+        _, action_service = get_services(os_type, device_id)
+        action_service.tap(x, y)
         return f"Successfully tapped at ({x}, {y})"
     except Exception as e:
         logger.error(f"Failed to tap coordinate: {e}")
@@ -113,13 +112,8 @@ def swipe_screen(
         logger.info(
             f"Swiping from ({x1}, {y1}) to ({x2}, {y2}) for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        if os_type == "android":
-            client.swipe(x1, y1, x2, y2, duration_ms)
-        else:
-            # iOS might not support duration in the cli tool currently based on the code,
-            # but we pass it as it was requested or ignored internally.
-            client.swipe(x1, y1, x2, y2, duration_ms)
+        _, action_service = get_services(os_type, device_id)
+        action_service.swipe(x1, y1, x2, y2, duration_ms)
         return f"Successfully swiped from ({x1}, {y1}) to ({x2}, {y2})"
     except Exception as e:
         logger.error(f"Failed to swipe screen: {e}")
@@ -141,8 +135,8 @@ def input_text_field(
     """
     try:
         logger.info(f"Inputting text '{text}' for {os_type} (device_id: {device_id})")
-        client = get_client(os_type, device_id)
-        client.input_text(text)
+        _, action_service = get_services(os_type, device_id)
+        action_service.input_text(text)
         return f"Successfully input text: {text}"
     except Exception as e:
         logger.error(f"Failed to input text: {e}")
@@ -171,8 +165,8 @@ def long_press_coordinate(
         logger.info(
             f"Long pressing coordinate ({x}, {y}) for {duration_ms}ms for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        client.long_press(x, y, duration_ms)
+        _, action_service = get_services(os_type, device_id)
+        action_service.long_press(x, y, duration_ms)
         return f"Successfully long pressed at ({x}, {y}) for {duration_ms}ms"
     except Exception as e:
         logger.error(f"Failed to long press coordinate: {e}")
@@ -195,8 +189,8 @@ def press_system_key(
         logger.info(
             f"Pressing system key '{key_name}' for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        result = client.press_keycode(key_name)
+        _, action_service = get_services(os_type, device_id)
+        result = action_service.press_keycode(key_name)
         if result:  # Used for the iOS 'back' button warning
             return result
         return f"Successfully pressed system key: {key_name}"
@@ -221,8 +215,8 @@ def launch_application(
         logger.info(
             f"Launching application '{bundle_id}' for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        client.launch_app(bundle_id)
+        _, action_service = get_services(os_type, device_id)
+        action_service.launch_app(bundle_id)
         return f"Successfully launched application: {bundle_id}"
     except Exception as e:
         logger.error(f"Failed to launch application: {e}")
@@ -245,8 +239,8 @@ def kill_application(
         logger.info(
             f"Killing application '{bundle_id}' for {os_type} (device_id: {device_id})"
         )
-        client = get_client(os_type, device_id)
-        client.kill_app(bundle_id)
+        _, action_service = get_services(os_type, device_id)
+        action_service.kill_app(bundle_id)
         return f"Successfully killed application: {bundle_id}"
     except Exception as e:
         logger.error(f"Failed to kill application: {e}")
