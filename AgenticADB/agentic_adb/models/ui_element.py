@@ -26,6 +26,10 @@ class UIElement:
     center_x: int
     center_y: int
 
+    def __post_init__(self):
+        if self.center_x < 0 or self.center_y < 0:
+            raise ValueError("Coordinates must be non-negative")
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts the UIElement instance into a dictionary suitable for JSON serialization.
 

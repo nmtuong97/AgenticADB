@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Any
+from typing import Any
 from agentic_adb.models import UIElement
 from agentic_adb.exceptions import ParseError
 from .base_parser import BaseParser
@@ -7,7 +7,7 @@ from .base_parser import BaseParser
 class IDBParser(BaseParser[UIElement]):
     """Parses an iOS IDB UI JSON string and returns a filtered list of UI elements."""
 
-    def parse(self, raw: str) -> List[UIElement]:
+    def parse(self, raw: str) -> list[UIElement]:
         if not raw.strip():
             return []
 
@@ -19,7 +19,7 @@ class IDBParser(BaseParser[UIElement]):
         elements = []
         filtered_index = [1]
 
-        def traverse(node: Dict[str, Any]):
+        def traverse(node: dict[str, Any]):
             node_type = node.get("type", "")
             if node_type.startswith("XCUIElementType"):
                 class_name = node_type[len("XCUIElementType") :]

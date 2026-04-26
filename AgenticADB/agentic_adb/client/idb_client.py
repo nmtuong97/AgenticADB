@@ -16,7 +16,7 @@ class IDBClient(BaseClient):
     def dump_ui(self) -> str:
         """Dumps the current UI hierarchy from the iOS device."""
         # Safe/read operation, allow retries
-        return self._run_command(self._build_cmd(["ui", "describe-all"]), retries=2)
+        return self._run_command(self._build_cmd(["ui", "describe-all"]), retry=True)
 
     def tap(self, x: int, y: int) -> None:
         """Taps at the specified physical screen coordinates."""
@@ -48,23 +48,21 @@ class IDBClient(BaseClient):
         ]
         self._run_command(self._build_cmd(cmd))
 
-    def press_keycode(self, keycode: str) -> str:
-        """Simulates pressing hardware or system keys.
+    def press_keycode(self, keycode: str) -> None:
+        """Simulates pressing hardware or system keys."""
+        import logging
+        logger = logging.getLogger(__name__)
 
-        Returns:
-            An empty string on success, or a warning message string if the key is unsupported (like 'back').
-        """
         keycode_lower = keycode.lower()
         if keycode_lower == "home":
             self._run_command(self._build_cmd(["ui", "button", "HOME"]))
         elif keycode_lower == "back":
-            return "Warning: iOS does not support a hardware back button. Please use tap_coordinate to tap the back UI element on screen."
+            logger.warning("iOS does not support a hardware back button. Please use tap_coordinate to tap the back UI element on screen.")
         elif keycode_lower == "enter":
             self._run_command(self._build_cmd(["ui", "text", "\n"]))
         else:
             # Fallback
             self._run_command(self._build_cmd(["ui", "button", keycode]))
-        return ""
 
     def launch_app(self, bundle_id: str) -> None:
         """Launches an application by its bundle identifier."""

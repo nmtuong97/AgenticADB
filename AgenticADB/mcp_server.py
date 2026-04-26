@@ -190,9 +190,7 @@ def press_system_key(
             f"Pressing system key '{key_name}' for {os_type} (device_id: {device_id})"
         )
         _, action_service = get_services(os_type, device_id)
-        result = action_service.press_keycode(key_name)
-        if result:  # Used for the iOS 'back' button warning
-            return result
+        action_service.press_keycode(key_name)
         return f"Successfully pressed system key: {key_name}"
     except Exception as e:
         logger.error(f"Failed to press system key: {e}")

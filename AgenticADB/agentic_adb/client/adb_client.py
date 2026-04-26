@@ -19,15 +19,15 @@ class ADBClient(BaseClient):
         """Dumps the current UI hierarchy from the device."""
         # Dump the hierarchy to a file on the device
         device_path = "/sdcard/window_dump.xml"
-        # Safe/read operation, retry twice
-        self._run_command(self._build_cmd(["shell", "uiautomator", "dump", device_path]), retries=2)
+        # Safe/read operation, retry is allowed
+        self._run_command(self._build_cmd(["shell", "uiautomator", "dump", device_path]), retry=True)
 
         # Pull the file to a temporary file locally
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             local_path = tmp_file.name
 
         try:
-            self._run_command(self._build_cmd(["pull", device_path, local_path]), retries=2)
+            self._run_command(self._build_cmd(["pull", device_path, local_path]), retry=True)
             with open(local_path, "r", encoding="utf-8") as f:
                 xml_content = f.read()
             return xml_content
@@ -86,7 +86,7 @@ class ADBClient(BaseClient):
             )
         )
 
-    def press_keycode(self, keycode: str) -> str:
+    def press_keycode(self, keycode: str) -> None:
         """Simulates pressing hardware or system keys."""
         keycode_mapping = {
             "home": "KEYCODE_HOME",
@@ -95,7 +95,6 @@ class ADBClient(BaseClient):
         }
         mapped_keycode = keycode_mapping.get(keycode.lower(), keycode)
         self._run_command(self._build_cmd(["shell", "input", "keyevent", mapped_keycode]))
-        return ""
 
     def launch_app(self, bundle_id: str) -> None:
         """Launches an application by its package name or bundle ID."""

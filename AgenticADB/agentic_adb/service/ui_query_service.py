@@ -1,4 +1,4 @@
-from typing import List, TypeVar, Generic
+from typing import TypeVar, Generic
 
 from agentic_adb.client.base_client import BaseClient
 from agentic_adb.parser.base_parser import BaseParser
@@ -22,15 +22,28 @@ class UIQueryService(Generic[T]):
         """
         self._client = client
         self._parser = parser
+        self._cache: list[T] | None = None
 
-    def get_ui_elements(self) -> List[T]:
-        """Retrieves and parses the current UI hierarchy.
+    def get_ui_elements(self) -> list[T]:
+        """Retrieves and parses the current UI hierarchy. Uses cache if available.
 
         Returns:
             A list of parsed models (e.g. UIElements).
         """
+        if self._cache is not None:
+            return self._cache
+
         raw_output = self._client.dump_ui()
-        return self._parser.parse(raw_output)
+        if not raw_output:
+            self._cache = []
+        else:
+            self._cache = self._parser.parse(raw_output)
+
+        return self._cache
+
+    def clear_cache(self) -> None:
+        """Clears the cached UI elements."""
+        self._cache = None
 
     def get_raw_ui(self) -> str:
         """Retrieves the raw UI hierarchy string without parsing.
@@ -40,7 +53,7 @@ class UIQueryService(Generic[T]):
         """
         return self._client.dump_ui()
 
-    def parse_raw(self, raw_output: str) -> List[T]:
+    def parse_raw(self, raw_output: str) -> list[T]:
         """Parses a provided raw string of UI hierarchy.
 
         Args:
@@ -49,4 +62,6 @@ class UIQueryService(Generic[T]):
         Returns:
             A list of parsed models.
         """
+        if not raw_output:
+            return []
         return self._parser.parse(raw_output)

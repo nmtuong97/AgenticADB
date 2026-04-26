@@ -5,6 +5,12 @@ from agentic_adb.models import UIElement
 
 class TestParsers(unittest.TestCase):
 
+    def test_ui_element_validation(self):
+        with self.assertRaises(ValueError):
+            UIElement(1, "Cls", "Txt", "Id", "Desc", True, -1, 0)
+        with self.assertRaises(ValueError):
+            UIElement(1, "Cls", "Txt", "Id", "Desc", True, 0, -1)
+
     def test_adb_parser(self):
         parser = ADBParser()
         xml = '''<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>

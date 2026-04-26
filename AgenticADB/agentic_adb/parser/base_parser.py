@@ -1,11 +1,11 @@
-from typing import TypeVar, Protocol, List
+from typing import TypeVar, Protocol
 
 T = TypeVar("T")
 
 class BaseParser(Protocol[T]):
     """Generic protocol for UI hierarchy parsers."""
 
-    def parse(self, raw: str) -> List[T]:
+    def parse(self, raw: str) -> list[T]:
         """Parses the raw hierarchy string into a list of parsed models.
 
         Args:
