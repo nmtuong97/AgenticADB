@@ -1,3 +1,14 @@
+Metadata-Version: 2.4
+Name: agentic-adb
+Version: 1.0.0
+Summary: Token-efficient Android and iOS UI parser for LLM-driven automation
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: mcp>=1.0.0
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-mock; extra == "dev"
+
 # AgenticADB
 
 A token-efficient Android UI parser that converts bulky XML into minified JSON for LLM-driven automation testing.
@@ -13,23 +24,13 @@ Empower LLM Agents to automate Android devices with zero vision cost by strippin
 
 ## Usage
 
-After installation, you can use the globally available `aadb` command. AgenticADB features Smart Device Routing, automatically detecting the target OS (Android or iOS) based on the device ID or single-device connections.
-
+You can use the provided command line tool:
 ```bash
-# Install the package and CLI tool globally
-pip install -e .
+# Dump the current UI hierarchy on the default device, parsing to stdout
+python3 main.py
 
-# Dump the minified UI JSON for a specific device to stdout
-aadb --device emulator-5554 dump
-
-# Tap a coordinate on an iOS device
-aadb --device 00008101-001E12345678901E tap --x 100 --y 200
-
-# Auto-detect the device (if only 1 is connected) and perform a swipe
-aadb swipe --x1 100 --y1 500 --x2 100 --y2 100 --duration 300
-
-# Dump UI to a file and save the raw XML/JSON alongside it
-aadb --device emulator-5554 dump -o view.json --raw
+# Specify an output json file and a device, and optionally save the raw XML
+python3 main.py -d emulator-5554 -o view.json --raw
 ```
 
 ## Structure

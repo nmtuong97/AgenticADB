@@ -72,15 +72,17 @@ Follow these Karpathy-inspired skills. Transform your imperative instructions in
 ### Folder Structure Overview
 ```text
 AgenticADB/
+├── pyproject.toml       # Package configuration & `aadb` CLI entry point
 ├── agentic_adb/
-│   ├── adb_client.py    # Android implementation
-│   ├── idb_client.py    # iOS implementation
-│   ├── models.py        # Universal UI Contract (Dataclasses)
-│   └── parser.py        # Core logic for stripping prefixes/noise
+│   ├── client/          # Device clients (adb_client, idb_client)
+│   ├── parser/          # Parsers (adb_parser, idb_parser)
+│   ├── service/         # Orchestration layers (query, action)
+│   ├── models/          # Universal UI Contract (Dataclasses)
+│   ├── device_utils.py  # Smart device routing logic
+│   └── cli.py           # Argument parsing and subcommand routing
 ├── tests/
-│   ├── mock_data/       # Strictly separated mock files (e.g., mock_android_dump.xml, mock_ios_dump.json)
+│   ├── mocks/           # Strictly separated mock files
 │   └── ...
-├── main.py              # CLI entrypoint
 └── mcp_server.py        # FastMCP Server integration
 ```
 
@@ -115,7 +117,7 @@ When testing, embody the Goal-Driven Execution principle. If a test fails:
 Maintain strictly separated mock data files for each platform's parsing tests. Do not combine them. Use `mock_android_dump.xml` for ADB and `mock_ios_dump.json` for IDB.
 
 ### CLI Testing Anti-Pattern
-For CLI testing (`main.py`), avoid the anti-pattern of mocking `sys.argv` and catching `sys.exit`. Instead, extract the inner CLI logic into a testable function (e.g., `run_cli(args: list[str])`) to keep core logic isolated from the global `sys` state.
+For CLI testing (`agentic_adb/cli.py`), avoid the anti-pattern of mocking `sys.argv` and catching `sys.exit`. Instead, extract the inner CLI logic into a testable function (e.g., `run_cli(args: list[str])`) to keep core logic isolated from the global `sys` state.
 
 ---
 
