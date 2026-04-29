@@ -8,28 +8,28 @@ describe("IdbParser", () => {
 		const parser = new IdbParser();
 		const jsonPath = path.resolve(__dirname, "fixtures/mock_ios_dump.json");
 
-		if (fs.existsSync(jsonPath)) {
-			const json = fs.readFileSync(jsonPath, "utf8");
-			const result = parser.parse(json);
-
-			expect(result).toBeInstanceOf(Array);
-			expect(result.length).toBeGreaterThan(0);
-
-			const el = result[0];
-			expect(el).toHaveProperty("index");
-			expect(el).toHaveProperty("class");
-			expect(el).toHaveProperty("text");
-			expect(el).toHaveProperty("id");
-			expect(el).toHaveProperty("desc");
-			expect(el).toHaveProperty("clickable");
-			expect(el).toHaveProperty("center_x");
-			expect(el).toHaveProperty("center_y");
-
-			expect(typeof el.center_x).toBe("number");
-			expect(Number.isInteger(el.center_x)).toBe(true);
-		} else {
-			console.warn("Skipping fixture test: mock_ios_dump.json not found");
+		if (!fs.existsSync(jsonPath)) {
+			throw new Error(`Fixture not found: ${jsonPath}`);
 		}
+
+		const json = fs.readFileSync(jsonPath, "utf8");
+		const result = parser.parse(json);
+
+		expect(result).toBeInstanceOf(Array);
+		expect(result.length).toBeGreaterThan(0);
+
+		const el = result[0];
+		expect(el).toHaveProperty("index");
+		expect(el).toHaveProperty("class");
+		expect(el).toHaveProperty("text");
+		expect(el).toHaveProperty("id");
+		expect(el).toHaveProperty("desc");
+		expect(el).toHaveProperty("clickable");
+		expect(el).toHaveProperty("center_x");
+		expect(el).toHaveProperty("center_y");
+
+		expect(typeof el.center_x).toBe("number");
+		expect(Number.isInteger(el.center_x)).toBe(true);
 	});
 
 	it("should return empty array for empty input", () => {

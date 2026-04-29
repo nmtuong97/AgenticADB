@@ -1,13 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { AdbClient } from "./client/adb-client.js";
-import { IdbClient } from "./client/idb-client.js";
-import { smartDeviceRouting } from "./device-utils.js";
 import { runMcpServer } from "./mcp-server.js";
-import { AdbParser } from "./parser/adb-parser.js";
-import { IdbParser } from "./parser/idb-parser.js";
-import { UIActionService } from "./service/ui-action-service.js";
-import { UIQueryService } from "./service/ui-query-service.js";
+import { getServices } from "./runtime-context.js";
 
 export async function runCli(args: string[]) {
 	const program = new Command();
@@ -19,26 +13,6 @@ export async function runCli(args: string[]) {
 		.option("-d, --device <id>", "Target device ID")
 		.option("--os <os>", "Target OS (android or ios)");
 
-	async function getServices(options: Record<string, string>) {
-		const { os, deviceId } = await smartDeviceRouting(
-			options.device,
-			options.os,
-		);
-		let client: any, parser: any;
-
-		if (os === "android") {
-			client = new AdbClient(deviceId);
-			parser = new AdbParser();
-		} else {
-			client = new IdbClient(deviceId);
-			parser = new IdbParser();
-		}
-
-		const queryService = new UIQueryService(client, parser);
-		const actionService = new UIActionService(client);
-		return { queryService, actionService };
-	}
-
 	program
 		.command("dump")
 		.description("Dump the current UI hierarchy as minified JSON")
@@ -49,17 +23,14 @@ export async function runCli(args: string[]) {
 		.option("-o, --output <filepath>", "Save the output to a specific file")
 		.action(async (options) => {
 			try {
-				const { queryService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { queryService, client } = await getServices(
+					opts.os,
+					opts.device,
+				);
+
 				let outData: string;
 				if (options.raw) {
-					const { os, deviceId } = await smartDeviceRouting(
-						program.opts().device,
-						program.opts().os,
-					);
-					const client =
-						os === "android"
-							? new AdbClient(deviceId)
-							: new IdbClient(deviceId);
 					outData = await client.dumpUI();
 				} else {
 					const ui = await queryService.getCurrentUI();
@@ -84,7 +55,8 @@ export async function runCli(args: string[]) {
 		.description("Tap at specific coordinates")
 		.action(async (x, y) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.tapCoordinate(parseInt(x, 10), parseInt(y, 10));
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -97,7 +69,8 @@ export async function runCli(args: string[]) {
 		.description("Swipe from x1,y1 to x2,y2")
 		.action(async (x1, y1, x2, y2, duration) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.swipeScreen(
 					parseInt(x1, 10),
 					parseInt(y1, 10),
@@ -116,7 +89,8 @@ export async function runCli(args: string[]) {
 		.description("Input text")
 		.action(async (text) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.inputTextField(text);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -129,7 +103,8 @@ export async function runCli(args: string[]) {
 		.description("Long press at specific coordinates")
 		.action(async (x, y, duration) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.longPressCoordinate(
 					parseInt(x, 10),
 					parseInt(y, 10),
@@ -146,7 +121,8 @@ export async function runCli(args: string[]) {
 		.description("Press a system key (home, back, enter, etc.)")
 		.action(async (key) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.pressSystemKey(key);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -159,7 +135,8 @@ export async function runCli(args: string[]) {
 		.description("Launch an application")
 		.action(async (appId) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.launchApplication(appId);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -172,7 +149,8 @@ export async function runCli(args: string[]) {
 		.description("Kill an application")
 		.action(async (appId) => {
 			try {
-				const { actionService } = await getServices(program.opts());
+				const opts = program.opts();
+				const { actionService } = await getServices(opts.os, opts.device);
 				await actionService.killApplication(appId);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);

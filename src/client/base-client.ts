@@ -68,18 +68,30 @@ export async function runCommand(
 					);
 				});
 
-				child.on("close", (code: any) => {
-					if (code !== 0) {
-						reject(
-							new CommandError(`Command failed with code ${code}: ${stderr}`),
-						);
+				child.on("close", (code: any, signal: any) => {
+					if (code !== 0 || signal) {
+						let errorMessage = `Command failed`;
+						if (code !== null) errorMessage += ` with code ${code}`;
+						if (signal != null) errorMessage += ` (killed by signal ${signal})`;
+						if (stderr.trim()) errorMessage += `: ${stderr.trim()}`;
+						reject(new CommandError(errorMessage));
 					} else {
 						resolve(stdout);
 					}
 				});
 			});
-		} catch (error) {
+		} catch (error: any) {
 			if (!retry || attempt >= maxRetries) {
+				if (error instanceof CommandError) {
+					const isTimeout =
+						error.message.includes("signal SIGTERM") ||
+						error.message.includes("signal SIGKILL");
+					if (isTimeout) {
+						throw new CommandError(
+							`Command timed out after ${timeout}ms. ${error.message}`,
+						);
+					}
+				}
 				throw error;
 			}
 			attempt++;
@@ -87,5 +99,5 @@ export async function runCommand(
 			await new Promise((resolve) => setTimeout(resolve, delay));
 		}
 	}
-	throw new CommandError("Command failed");
+	throw new CommandError("Command failed after all retry attempts");
 }

@@ -6,13 +6,7 @@ import {
 	ListToolsRequestSchema,
 	McpError,
 } from "@modelcontextprotocol/sdk/types.js";
-import { AdbClient } from "./client/adb-client.js";
-import { IdbClient } from "./client/idb-client.js";
-import { smartDeviceRouting } from "./device-utils.js";
-import { AdbParser } from "./parser/adb-parser.js";
-import { IdbParser } from "./parser/idb-parser.js";
-import { UIActionService } from "./service/ui-action-service.js";
-import { UIQueryService } from "./service/ui-query-service.js";
+import { getServices } from "./runtime-context.js";
 
 export async function runMcpServer(_args: string[]) {
 	const server = new Server(
@@ -26,22 +20,6 @@ export async function runMcpServer(_args: string[]) {
 			},
 		},
 	);
-
-	async function getServices(osOpt?: string, deviceOpt?: string) {
-		const { os, deviceId } = await smartDeviceRouting(deviceOpt, osOpt);
-		let client: any, parser: any;
-		if (os === "android") {
-			client = new AdbClient(deviceId);
-			parser = new AdbParser();
-		} else {
-			client = new IdbClient(deviceId);
-			parser = new IdbParser();
-		}
-		return {
-			queryService: new UIQueryService(client, parser),
-			actionService: new UIActionService(client),
-		};
-	}
 
 	server.setRequestHandler(ListToolsRequestSchema, async () => {
 		return {

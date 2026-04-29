@@ -50,7 +50,27 @@ describe("BaseClient runCommand", () => {
 		(child_process.spawn as any) = mockSpawn;
 
 		await expect(runCommand("fail", [])).rejects.toThrow(
-			/Command failed with code 1/,
+			/Command failed with code 1: error output/,
+		);
+	});
+
+	it("should format signal errors properly", async () => {
+		const mockSpawn = vi.fn().mockImplementation(() => {
+			const ee = new (require("events").EventEmitter)();
+			ee.stdout = new (require("events").EventEmitter)();
+			ee.stderr = new (require("events").EventEmitter)();
+
+			setTimeout(() => {
+				ee.emit("close", null, "SIGKILL");
+			}, 10);
+
+			return ee;
+		});
+
+		(child_process.spawn as any) = mockSpawn;
+
+		await expect(runCommand("fail", [], { timeout: 100 })).rejects.toThrow(
+			/Command timed out after 100ms\. Command failed \(killed by signal SIGKILL\)/,
 		);
 	});
 

@@ -8,28 +8,28 @@ describe("AdbParser", () => {
 		const parser = new AdbParser();
 		const xmlPath = path.resolve(__dirname, "fixtures/mock_android_dump.xml");
 
-		if (fs.existsSync(xmlPath)) {
-			const xml = fs.readFileSync(xmlPath, "utf8");
-			const result = parser.parse(xml);
-
-			expect(result).toBeInstanceOf(Array);
-			expect(result.length).toBeGreaterThan(0);
-
-			const el = result[0];
-			expect(el).toHaveProperty("index");
-			expect(el).toHaveProperty("class");
-			expect(el).toHaveProperty("text");
-			expect(el).toHaveProperty("id");
-			expect(el).toHaveProperty("desc");
-			expect(el).toHaveProperty("clickable");
-			expect(el).toHaveProperty("center_x");
-			expect(el).toHaveProperty("center_y");
-
-			expect(typeof el.center_x).toBe("number");
-			expect(Number.isInteger(el.center_x)).toBe(true);
-		} else {
-			console.warn("Skipping fixture test: mock_android_dump.xml not found");
+		if (!fs.existsSync(xmlPath)) {
+			throw new Error(`Fixture not found: ${xmlPath}`);
 		}
+
+		const xml = fs.readFileSync(xmlPath, "utf8");
+		const result = parser.parse(xml);
+
+		expect(result).toBeInstanceOf(Array);
+		expect(result.length).toBeGreaterThan(0);
+
+		const el = result[0];
+		expect(el).toHaveProperty("index");
+		expect(el).toHaveProperty("class");
+		expect(el).toHaveProperty("text");
+		expect(el).toHaveProperty("id");
+		expect(el).toHaveProperty("desc");
+		expect(el).toHaveProperty("clickable");
+		expect(el).toHaveProperty("center_x");
+		expect(el).toHaveProperty("center_y");
+
+		expect(typeof el.center_x).toBe("number");
+		expect(Number.isInteger(el.center_x)).toBe(true);
 	});
 
 	it("should return empty array for empty input", () => {

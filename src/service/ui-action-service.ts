@@ -4,7 +4,7 @@ export class UIActionService {
 	constructor(private client: BaseClient) {}
 
 	async tapCoordinate(x: number, y: number): Promise<void> {
-		if (x == null || y == null || x < 0 || y < 0) {
+		if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || y < 0) {
 			throw new Error("Invalid coordinates for tap");
 		}
 		await this.client.tap(x, y);
@@ -17,8 +17,19 @@ export class UIActionService {
 		endY: number,
 		durationMs: number = 300,
 	): Promise<void> {
-		if (startX < 0 || startY < 0 || endX < 0 || endY < 0) {
-			throw new Error("Invalid coordinates for swipe");
+		if (
+			!Number.isFinite(startX) ||
+			!Number.isFinite(startY) ||
+			!Number.isFinite(endX) ||
+			!Number.isFinite(endY) ||
+			!Number.isFinite(durationMs) ||
+			startX < 0 ||
+			startY < 0 ||
+			endX < 0 ||
+			endY < 0 ||
+			durationMs < 0
+		) {
+			throw new Error("Invalid coordinates or duration for swipe");
 		}
 		await this.client.swipe(startX, startY, endX, endY, durationMs);
 	}
@@ -35,8 +46,15 @@ export class UIActionService {
 		y: number,
 		durationMs: number = 1000,
 	): Promise<void> {
-		if (x < 0 || y < 0) {
-			throw new Error("Invalid coordinates for long press");
+		if (
+			!Number.isFinite(x) ||
+			!Number.isFinite(y) ||
+			!Number.isFinite(durationMs) ||
+			x < 0 ||
+			y < 0 ||
+			durationMs < 0
+		) {
+			throw new Error("Invalid coordinates or duration for long press");
 		}
 		await this.client.longPress(x, y, durationMs);
 	}
