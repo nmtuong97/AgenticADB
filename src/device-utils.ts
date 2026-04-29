@@ -48,8 +48,10 @@ export async function smartDeviceRouting(
 		throw new Error(`Unsupported OS: ${osOpt}`);
 	}
 
-	const androidDevices = await detectAndroidDevices();
-	const iosDevices = await detectIosDevices();
+	const [androidDevices, iosDevices] = await Promise.all([
+		detectAndroidDevices(),
+		detectIosDevices(),
+	]);
 
 	if (deviceOpt) {
 		if (androidDevices.includes(deviceOpt)) {

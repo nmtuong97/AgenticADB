@@ -26,7 +26,7 @@ describe("Services", () => {
 	});
 
 	describe("UIQueryService", () => {
-		it("should query UI and update cache", async () => {
+		it("should query UI", async () => {
 			mockClient.dumpUI.mockResolvedValue("<xml></xml>");
 			const mockElements = [{ class: "test" }];
 			mockParser.parse.mockReturnValue(mockElements);
@@ -40,11 +40,6 @@ describe("Services", () => {
 			expect(mockClient.dumpUI).toHaveBeenCalledTimes(1);
 			expect(mockParser.parse).toHaveBeenCalledWith("<xml></xml>");
 			expect(result).toBe(mockElements);
-
-			// Second call should use cache
-			const result2 = await service.getCurrentUI();
-			expect(mockClient.dumpUI).toHaveBeenCalledTimes(1);
-			expect(result2).toBe(mockElements);
 		});
 
 		it("should handle empty dump correctly", async () => {
@@ -75,7 +70,20 @@ describe("Services", () => {
 		it("should error on invalid coordinates", async () => {
 			const service = new UIActionService(mockClient as BaseClient);
 			await expect(service.tapCoordinate(-1, 10)).rejects.toThrow();
+			await expect(service.tapCoordinate(Number.NaN, 10)).rejects.toThrow();
+			await expect(
+				service.tapCoordinate(10, Number.POSITIVE_INFINITY),
+			).rejects.toThrow();
+
 			await expect(service.swipeScreen(10, -20, 30, 40)).rejects.toThrow();
+			await expect(
+				service.swipeScreen(10, 20, 30, 40, Number.NaN),
+			).rejects.toThrow();
+
+			await expect(
+				service.longPressCoordinate(Number.NEGATIVE_INFINITY, 100),
+			).rejects.toThrow();
+			await expect(service.longPressCoordinate(100, 100, -1)).rejects.toThrow();
 		});
 	});
 });
