@@ -29,7 +29,7 @@ export async function runMcpServer(_args: string[]) {
 
 	async function getServices(osOpt?: string, deviceOpt?: string) {
 		const { os, deviceId } = await smartDeviceRouting(deviceOpt, osOpt);
-		let client, parser;
+		let client: any, parser: any;
 		if (os === "android") {
 			client = new AdbClient(deviceId);
 			parser = new AdbParser();

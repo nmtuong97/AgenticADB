@@ -24,7 +24,7 @@ export async function runCli(args: string[]) {
 			options.device,
 			options.os,
 		);
-		let client, parser;
+		let client: any, parser: any;
 
 		if (os === "android") {
 			client = new AdbClient(deviceId);
