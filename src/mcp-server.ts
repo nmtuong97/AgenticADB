@@ -212,12 +212,9 @@ export async function runMcpServer(_args: string[]) {
 	console.error("AgenticADB MCP server running on stdio");
 }
 
-import { fileURLToPath } from "node:url";
+import { isMain } from "./is-main.js";
 
-const isMain =
-	typeof process !== "undefined" &&
-	process.argv[1] === fileURLToPath(import.meta.url);
-if (isMain) {
+if (isMain(import.meta.url)) {
 	runMcpServer(process.argv).catch((e) => {
 		console.error(e);
 		process.exit(1);

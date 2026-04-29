@@ -170,18 +170,14 @@ export async function runCli(args: string[]) {
 			}
 		});
 
-	if (typeof process !== "undefined" && process.env.NODE_ENV !== "test") {
-		program.parse(args);
-	} else {
-		return program.parseAsync(args);
-	}
+	return program.parseAsync(args);
 }
 
-import { fileURLToPath } from "node:url";
+import { isMain } from "./is-main.js";
 
-const isMain =
-	typeof process !== "undefined" &&
-	process.argv[1] === fileURLToPath(import.meta.url);
-if (isMain) {
-	runCli(process.argv);
+if (isMain(import.meta.url)) {
+	runCli(process.argv).catch((e) => {
+		console.error(`Fatal error: ${e.message}`);
+		process.exit(1);
+	});
 }

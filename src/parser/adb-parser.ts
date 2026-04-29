@@ -29,7 +29,7 @@ export class AdbParser implements BaseParser {
 			});
 			const parsed = parser.parse(cleanXml);
 
-			if (!parsed || !parsed.hierarchy) {
+			if (!parsed?.hierarchy) {
 				throw new ParseError("Invalid XML format");
 			}
 
@@ -46,7 +46,7 @@ export class AdbParser implements BaseParser {
 
 					const rawId = node["@_resource-id"] || "";
 					let id = rawId;
-					if (rawId && rawId.includes("/")) {
+					if (rawId?.includes("/")) {
 						id = rawId.split("/")[1];
 					}
 
