@@ -1,7 +1,7 @@
 # AgenticADB
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Node.js 20+](https://img.shields.io/badge/node-20+-blue.svg)
 
 **A token-efficient Android & iOS UI bridge for LLM Agents**
 
@@ -36,14 +36,14 @@ Furthermore, we pre-calculate the exact center coordinates (`center_x`, `center_
 
 ## Installation
 
-**Strict Requirement:** AgenticADB requires **Python 3.10 or higher**.
+**Strict Requirement:** AgenticADB requires **Node.js 20 or higher**.
 
 Clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/your-org/AgenticADB.git
 cd AgenticADB
-pip install -r requirements.txt
+npm ci
 ```
 
 ## Usage (MCP Server)
@@ -59,9 +59,9 @@ Edit your `claude_desktop_config.json` file (usually located at `~/Library/Appli
 ```json
 {
   "mcpServers": {
-    "agentic_adb": {
-      "command": "python3",
-      "args": ["<ABSOLUTE_PATH_TO_AGENTIC_ADB_REPO>/AgenticADB/mcp_server.py"]
+    "AgenticADB": {
+      "command": "npx",
+      "args": ["-y", "agentic-adb", "mcp-server"]
     }
   }
 }
@@ -75,14 +75,14 @@ To use AgenticADB directly inside Cursor IDE as an MCP server:
 2. Navigate to **Features > MCP**.
 3. Add a new server with the following details:
    - **Type:** `stdio`
-   - **Command:** `python3 <ABSOLUTE_PATH_TO_AGENTIC_ADB_REPO>/AgenticADB/mcp_server.py`
+   - **Command:** `npx -y agentic-adb mcp-server`
 
 ## Usage (CLI)
 
 You can also use AgenticADB directly from the command line to fetch the current UI state.
 
 ```bash
-# Ensure you are in the root directory and your PYTHONPATH is set
-PYTHONPATH=AgenticADB python3 AgenticADB/main.py --os android
-PYTHONPATH=AgenticADB python3 AgenticADB/main.py --os ios --device <UDID>
+# Ensure you are in the root directory and have run npm link or npm build
+npm run dev -- --os android dump
+npm run dev -- --os ios --device <UDID> dump
 ```
