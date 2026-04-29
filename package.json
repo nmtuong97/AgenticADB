@@ -1,0 +1,50 @@
+{
+	"name": "agentic-adb",
+	"version": "1.0.0",
+	"description": "AgenticADB: Autonomous UI parser and interaction tool for Android and iOS",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "vitest run",
+		"build": "tsup",
+		"dev": "tsx src/cli.ts",
+		"typecheck": "tsc --noEmit",
+		"check": "npm run typecheck && npm run test && npm run lint",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"pack:check": "npm pack && npm run pack:clean",
+		"pack:clean": "rm -f *.tgz",
+		"release": "changeset publish"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nmtuong97/AgenticADB.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=20"
+	},
+	"bin": {
+		"agentic-adb": "dist/cli.js",
+		"aadb": "dist/cli.js"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"commander": "^14.0.3",
+		"fast-xml-parser": "^5.7.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.13",
+		"@changesets/cli": "^2.31.0",
+		"@types/node": "^25.6.0",
+		"tsup": "^8.5.1",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.5"
+	}
+}
