@@ -52,7 +52,10 @@ export async function runCommand(
 				let stdout = "";
 				let stderr = "";
 
-				const child = spawn(cmd, args, { timeout });
+				const child = spawn(cmd, args, {
+					timeout,
+					stdio: ["ignore", "pipe", "pipe"],
+				});
 
 				child.stdout.on("data", (data: any) => {
 					stdout += data.toString();

@@ -15,9 +15,9 @@ describe("BaseClient runCommand", () => {
 
 	it("should return stdout on success", async () => {
 		const mockSpawn = vi.fn().mockImplementation(() => {
-			const ee = new (require("events").EventEmitter)();
-			ee.stdout = new (require("events").EventEmitter)();
-			ee.stderr = new (require("events").EventEmitter)();
+			const ee = new (require("node:events").EventEmitter)();
+			ee.stdout = new (require("node:events").EventEmitter)();
+			ee.stderr = new (require("node:events").EventEmitter)();
 
 			setTimeout(() => {
 				ee.stdout.emit("data", "success output");
@@ -35,9 +35,9 @@ describe("BaseClient runCommand", () => {
 
 	it("should throw CommandError on non-zero exit code", async () => {
 		const mockSpawn = vi.fn().mockImplementation(() => {
-			const ee = new (require("events").EventEmitter)();
-			ee.stdout = new (require("events").EventEmitter)();
-			ee.stderr = new (require("events").EventEmitter)();
+			const ee = new (require("node:events").EventEmitter)();
+			ee.stdout = new (require("node:events").EventEmitter)();
+			ee.stderr = new (require("node:events").EventEmitter)();
 
 			setTimeout(() => {
 				ee.stderr.emit("data", "error output");
@@ -56,9 +56,9 @@ describe("BaseClient runCommand", () => {
 
 	it("should format signal errors properly", async () => {
 		const mockSpawn = vi.fn().mockImplementation(() => {
-			const ee = new (require("events").EventEmitter)();
-			ee.stdout = new (require("events").EventEmitter)();
-			ee.stderr = new (require("events").EventEmitter)();
+			const ee = new (require("node:events").EventEmitter)();
+			ee.stdout = new (require("node:events").EventEmitter)();
+			ee.stderr = new (require("node:events").EventEmitter)();
 
 			setTimeout(() => {
 				ee.emit("close", null, "SIGKILL");
@@ -78,9 +78,9 @@ describe("BaseClient runCommand", () => {
 		let attempts = 0;
 		const mockSpawn = vi.fn().mockImplementation(() => {
 			attempts++;
-			const ee = new (require("events").EventEmitter)();
-			ee.stdout = new (require("events").EventEmitter)();
-			ee.stderr = new (require("events").EventEmitter)();
+			const ee = new (require("node:events").EventEmitter)();
+			ee.stdout = new (require("node:events").EventEmitter)();
+			ee.stderr = new (require("node:events").EventEmitter)();
 
 			setTimeout(() => {
 				if (attempts < 2) {
