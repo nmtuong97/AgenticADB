@@ -65,4 +65,19 @@ describe("IdbParser", () => {
 		expect(el.id).toBe("btn_submit");
 		expect(el.clickable).toBe(true);
 	});
+
+	it("should gracefully extract JSON from noisy output", () => {
+		const parser = new IdbParser();
+		const noisyInput = `
+Warning: some idb daemon message here.
+Connecting to device...
+{"type":"XCUIElementTypeButton","AXLabel":"NoisyButton","frame":{"x":10,"y":20,"width":30,"height":40}}
+Finished dumping.
+		`;
+		const elements = parser.parse(noisyInput);
+		expect(elements.length).toBe(1);
+		expect(elements[0].desc).toBe("NoisyButton");
+		expect(elements[0].center_x).toBe(10 + 15);
+		expect(elements[0].center_y).toBe(20 + 20);
+	});
 });

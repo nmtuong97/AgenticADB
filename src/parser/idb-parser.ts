@@ -9,7 +9,28 @@ export class IdbParser implements BaseParser {
 		}
 
 		try {
-			const parsed = JSON.parse(jsonData);
+			// Extract valid JSON substring to bypass plain-text prefixes/suffixes
+			let cleanedData = jsonData;
+			const firstBrace = jsonData.indexOf("{");
+			const firstBracket = jsonData.indexOf("[");
+			const firstIndex =
+				firstBrace === -1
+					? firstBracket
+					: firstBracket === -1
+						? firstBrace
+						: Math.min(firstBrace, firstBracket);
+
+			if (firstIndex !== -1) {
+				const isArray = firstIndex === firstBracket;
+				const lastIndex = isArray
+					? jsonData.lastIndexOf("]")
+					: jsonData.lastIndexOf("}");
+				if (lastIndex !== -1 && lastIndex >= firstIndex) {
+					cleanedData = jsonData.substring(firstIndex, lastIndex + 1);
+				}
+			}
+
+			const parsed = JSON.parse(cleanedData);
 			const elements: UIElement[] = [];
 			let index = 0;
 
