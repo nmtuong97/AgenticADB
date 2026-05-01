@@ -5,8 +5,9 @@ export async function detectAndroidDevices(): Promise<string[]> {
 		const output = await runCommand("adb", ["devices"], { timeout: 5000 });
 		const lines = output.split("\n");
 		const devices: string[] = [];
-		for (const line of lines) {
-			if (line.includes("List of devices attached")) continue;
+		for (let line of lines) {
+			line = line.trim();
+			if (line.includes("List of devices attached") || !line) continue;
 			const match = line.match(/^(\S+)\s+device$/);
 			if (match) {
 				devices.push(match[1]);
