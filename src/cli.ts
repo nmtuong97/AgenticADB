@@ -3,6 +3,8 @@ import { Command } from "commander";
 import { runMcpServer } from "./mcp-server.js";
 import { getServices } from "./runtime-context.js";
 
+import { checkDependencies } from "./startup-checks.js";
+
 export async function runCli(args: string[]) {
 	const program = new Command();
 
@@ -24,10 +26,9 @@ export async function runCli(args: string[]) {
 		.action(async (options) => {
 			try {
 				const opts = program.opts();
-				const { queryService, client } = await getServices(
-					opts.os,
-					opts.device,
-				);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { queryService, client } = services;
 
 				let outData: string;
 				if (options.raw) {
@@ -56,7 +57,9 @@ export async function runCli(args: string[]) {
 		.action(async (x, y) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.tapCoordinate(parseInt(x, 10), parseInt(y, 10));
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -70,7 +73,9 @@ export async function runCli(args: string[]) {
 		.action(async (x1, y1, x2, y2, duration) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.swipeScreen(
 					parseInt(x1, 10),
 					parseInt(y1, 10),
@@ -90,7 +95,9 @@ export async function runCli(args: string[]) {
 		.action(async (text) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.inputTextField(text);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -104,7 +111,9 @@ export async function runCli(args: string[]) {
 		.action(async (x, y, duration) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.longPressCoordinate(
 					parseInt(x, 10),
 					parseInt(y, 10),
@@ -122,7 +131,9 @@ export async function runCli(args: string[]) {
 		.action(async (key) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.pressSystemKey(key);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -136,7 +147,9 @@ export async function runCli(args: string[]) {
 		.action(async (appId) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.launchApplication(appId);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
@@ -150,7 +163,9 @@ export async function runCli(args: string[]) {
 		.action(async (appId) => {
 			try {
 				const opts = program.opts();
-				const { actionService } = await getServices(opts.os, opts.device);
+				const services = await getServices(opts.os, opts.device);
+				await checkDependencies(services.os);
+				const { actionService } = services;
 				await actionService.killApplication(appId);
 			} catch (e: any) {
 				console.error(`Error: ${e.message}`);
