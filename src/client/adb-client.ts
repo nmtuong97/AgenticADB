@@ -33,7 +33,23 @@ export class AdbClient implements BaseClient {
 			"dump",
 			"/dev/tty",
 		];
-		return await runCommand("adb", args, { retry: true, timeout: 15000 });
+		try {
+			return await runCommand("adb", args, { retry: false, timeout: 15000 });
+		} catch (error) {
+			const resetArgs = [
+				...this.getBaseArgs(),
+				"shell",
+				"pkill",
+				"-f",
+				"uiautomator",
+			];
+			try {
+				await runCommand("adb", resetArgs, { retry: false, timeout: 5000 });
+			} catch (_ignored) {
+				// Ignore reset failure
+			}
+			return await runCommand("adb", args, { retry: false, timeout: 15000 });
+		}
 	}
 
 	async tap(x: number, y: number): Promise<void> {
@@ -70,8 +86,19 @@ export class AdbClient implements BaseClient {
 	}
 
 	async inputText(text: string): Promise<void> {
-		const escapedText = text.replace(/ /g, "%s");
-		const args = [...this.getBaseArgs(), "shell", "input", "text", escapedText];
+		// First, handle spaces (Android shell input requires spaces to be %s)
+		const spaceEscaped = text.replace(/ /g, "%s");
+		// Then, wrap in single quotes and safely escape any inner single quotes
+		// e.g. "Hello'World" -> 'Hello'\''World'
+		const shellEscaped = `'${spaceEscaped.replace(/'/g, "'\\''")}'`;
+
+		const args = [
+			...this.getBaseArgs(),
+			"shell",
+			"input",
+			"text",
+			shellEscaped,
+		];
 		await runCommand("adb", args);
 	}
 

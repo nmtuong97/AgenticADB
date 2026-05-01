@@ -15,11 +15,36 @@ describe("Clients", () => {
 	describe("AdbClient", () => {
 		it("should format dumpUI correctly", async () => {
 			const client = new AdbClient("dev123");
+			vi.mocked(baseClient.runCommand).mockResolvedValueOnce("success");
 			await client.dumpUI();
 			expect(baseClient.runCommand).toHaveBeenCalledWith(
 				"adb",
 				["-s", "dev123", "exec-out", "uiautomator", "dump", "/dev/tty"],
-				expect.any(Object),
+				{ retry: false, timeout: 15000 },
+			);
+		});
+
+		it("should recover dumpUI upon failure", async () => {
+			const client = new AdbClient("dev123");
+			vi.mocked(baseClient.runCommand)
+				.mockRejectedValueOnce(new Error("dump failed")) // first dump
+				.mockResolvedValueOnce("") // pkill
+				.mockResolvedValueOnce("recovered dump"); // second dump
+
+			const result = await client.dumpUI();
+			expect(result).toBe("recovered dump");
+			expect(baseClient.runCommand).toHaveBeenCalledTimes(3);
+			expect(baseClient.runCommand).toHaveBeenNthCalledWith(
+				2,
+				"adb",
+				["-s", "dev123", "shell", "pkill", "-f", "uiautomator"],
+				{ retry: false, timeout: 5000 },
+			);
+			expect(baseClient.runCommand).toHaveBeenNthCalledWith(
+				3,
+				"adb",
+				["-s", "dev123", "exec-out", "uiautomator", "dump", "/dev/tty"],
+				{ retry: false, timeout: 15000 },
 			);
 		});
 
@@ -30,7 +55,23 @@ describe("Clients", () => {
 				"shell",
 				"input",
 				"text",
-				"hello%sworld",
+				"'hello%sworld'",
+			]);
+		});
+
+		it("should safely shell-escape complex input strings", async () => {
+			const client = new AdbClient();
+			// Tests command injection attempt: test string containing spaces, single quotes, double quotes, and shell metacharacters
+			await client.inputText(`test'ing "; echo "pwned`);
+			// "test'ing "; echo "pwned"
+			// 1. Space replacement: test'ing%s";%secho%s"pwned
+			// 2. Bourne shell escaping (wrap in '', replace ' with '\''):
+			// 'test'\''ing%s";%secho%s"pwned'
+			expect(baseClient.runCommand).toHaveBeenCalledWith("adb", [
+				"shell",
+				"input",
+				"text",
+				`'test'\\''ing%s";%secho%s"pwned'`,
 			]);
 		});
 

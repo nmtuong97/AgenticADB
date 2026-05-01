@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 
 export class CommandError extends Error {
+	public signal?: string;
+
 	constructor(message: string) {
 		super(message);
 		this.name = "CommandError";
@@ -77,7 +79,12 @@ export async function runCommand(
 						if (code !== null) errorMessage += ` with code ${code}`;
 						if (signal != null) errorMessage += ` (killed by signal ${signal})`;
 						if (stderr.trim()) errorMessage += `: ${stderr.trim()}`;
-						reject(new CommandError(errorMessage));
+						const err = new CommandError(errorMessage);
+						// Attach signal directly to the error object to avoid string parsing later
+						if (signal) {
+							(err as any).signal = signal;
+						}
+						reject(err);
 					} else {
 						resolve(stdout);
 					}
@@ -87,8 +94,7 @@ export async function runCommand(
 			if (!retry || attempt >= maxRetries) {
 				if (error instanceof CommandError) {
 					const isTimeout =
-						error.message.includes("signal SIGTERM") ||
-						error.message.includes("signal SIGKILL");
+						error.signal === "SIGTERM" || error.signal === "SIGKILL";
 					if (isTimeout) {
 						throw new CommandError(
 							`Command timed out after ${timeout}ms. ${error.message}`,
